@@ -6,27 +6,33 @@ import pandas
 import tensorflow as tf
 from sklearn.cluster import *
 from sklearn import preprocessing
+import pandas as pd
 
 
 random.seed(2016)
 sampleNum = 10
-
+np.seterr(all='raise')
 def completeTrajectories():
-    simTrjss = cPickle.load(open('./simulated_data/sim_trajectories'))
+    epsilon = 1e-6
+    id_column = 'ID'
+    simTrjss = pd.read_csv('./cache/smallSample.csv').groupby(id_column)
     simTrjComps = []
-    for simTrjs in simTrjss:
+    for key in simTrjss.groups.keys():
+        simTrjs = simTrjss.get_group(key)
         trjsCom = []
-        for i in range(0,len(simTrjs)):
+        first_row = True
+        for i, row in simTrjs.iterrows():
             rec = []
-            if i==0:
+            if first_row:
                 # time, locationC, speedC, rotC
                 rec = [0,0,0,0]
+                first_row = False
             else:
-                locC = math.sqrt((simTrjs[i][1]-simTrjs[i-1][1])**2+(simTrjs[i][2]-simTrjs[i-1][2])**2)
-                rec.append(simTrjs[i][0])
+                locC = math.sqrt((row[2]-simTrjs.loc[i-1][2])**2+(row[3]-simTrjs.loc[i-1][3])**2)
+                rec.append(row[1])
                 rec.append(locC)
-                rec.append(locC/(simTrjs[i][0]-simTrjs[i-1][0]))
-                rec.append(math.atan((simTrjs[i][2]-simTrjs[i-1][2])/ (simTrjs[i][1]-simTrjs[i-1][1])))
+                rec.append(row[4])
+                rec.append((row[5]-simTrjs.loc[i-1][5])*math.pi/180.0)
             trjsCom.append(rec)
         simTrjComps.append(trjsCom)
     cPickle.dump(simTrjComps,open('./simulated_data/sim_trajectories_complete','w'))
@@ -309,4 +315,4 @@ if __name__ == '__main__':
     generate_behavior_sequences()
     generate_normal_behavior_sequence()
     trajectory2Vec()
-    vecClusterAnalysis()
+    #vecClusterAnalysis()

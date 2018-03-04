@@ -9,6 +9,7 @@ speedPreSec = 5
 secPreCircle = 3000
 a = 10000
 b = 500
+
 def sim_data(sampleNum = sampleNum,speedPreSec = speedPreSec,
     secPreCircle = secPreCircle, a = a, b = b):
     ta = math.pi*2
